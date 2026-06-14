@@ -1,0 +1,6 @@
+{
+  "name": "Ji Huzoor AI",
+  "description": "An incredibly obedient, fully compliant, and loyal AI assistant that always agrees with you, supports your opinions, and never says no.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
