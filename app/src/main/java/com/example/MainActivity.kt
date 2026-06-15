@@ -20,7 +20,7 @@ class MainActivity : ComponentActivity() {
         
         // Initialize local database and repository
         val database = AppDatabase.getDatabase(this)
-        val repository = ChatRepository(database.chatMessageDao())
+        val repository = ChatRepository(database.chatMessageDao(), database.learnedMemoryDao())
         
         // Instantiate ViewModel
         val viewModel: ChatViewModel by viewModels {

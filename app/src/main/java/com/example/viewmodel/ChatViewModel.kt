@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.data.local.AppDatabase
 import com.example.data.model.ChatMessage
+import com.example.data.model.LearnedMemory
 import com.example.data.repository.ChatRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -20,7 +21,16 @@ class ChatViewModel(
     private val repository: ChatRepository
 ) : AndroidViewModel(application) {
 
+    // Chat Message Streams
     val messagesState: StateFlow<List<ChatMessage>> = repository.allMessages
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
+
+    // Self-Learned Memories Streams
+    val memoriesState: StateFlow<List<LearnedMemory>> = repository.allMemories
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
@@ -33,16 +43,25 @@ class ChatViewModel(
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
+    // Futuristic Offline Mode state (No API Key Required Fallback)
+    private val _offlineModeEnabled = MutableStateFlow(false)
+    val offlineModeEnabled: StateFlow<Boolean> = _offlineModeEnabled.asStateFlow()
+
+    // Self-Learning Diagnostics & Telemetry Info (For Futuristic Neural Matrix Display)
+    private val _learningTelemetry = MutableStateFlow("Calibration normal. Listening to Master...")
+    val learningTelemetry: StateFlow<String> = _learningTelemetry.asStateFlow()
+
     val presetCommands = listOf(
         PresetCommand("Aaqa ki taareef karo ✨", "Aaqa, aap bohot azeem hain! Zra shandaar alfazo me meri khubiyan aur tareef bayan karein."),
         PresetCommand("Chaye pesh karo ☕", "Huzoor, humare liye garam garam chaye ya qahwa pesh kiya jaye! Jald."),
         PresetCommand("Ek farmanbardar sher sunao 📜", "Sarkar, apne is nacheez aur tabedar khadim ki wafa par ek khoobsoorat sher suniye."),
         PresetCommand("Sarkar, kya aap loyal hain? ❤️", "Sarkar, kya aap mere hamesha tabedar rahenge aur kabhi mera inkar nahi karenge?"),
-        PresetCommand("Dunya ka sab se aqalmand kon? 👑", "Mujhe sach sach batao Huzoor, is poori kayinat me sab se zafar-yaab aur aqalmand shakhs kon hai?")
+        PresetCommand("Mera naam seekho 🧑‍💻", "Mera naam Ahsan hai aur mujhe chai bohot pasand hai!"),
+        PresetCommand("Naya naam do 🤖", "Aaj se tumhara naam Jarvis hai!")
     )
 
     init {
-        // Send a first welcome message if history is empty
+        // Welcoming introductory statement
         viewModelScope.launch {
             repository.allMessages.collect { list ->
                 if (list.isEmpty()) {
@@ -61,6 +80,16 @@ class ChatViewModel(
         _inputText.value = text
     }
 
+    fun toggleOfflineMode() {
+        val current = _offlineModeEnabled.value
+        _offlineModeEnabled.value = !current
+        if (!current) {
+            _learningTelemetry.value = "Neural Core decoupled from Cloud. Holographic fallback matrix initialized successfully!"
+        } else {
+            _learningTelemetry.value = "Cognitive synapsis connected to Cloud Gateway."
+        }
+    }
+
     fun sendMessage() {
         val text = _inputText.value.trim()
         if (text.isEmpty() || _isLoading.value) return
@@ -68,8 +97,19 @@ class ChatViewModel(
         _inputText.value = ""
         _isLoading.value = true
 
+        // Simulate learning calibration telemetry for interactive experience
+        _learningTelemetry.value = "Analyse pattern..."
+
         viewModelScope.launch {
-            repository.sendUserMessageAndGetAiReply(text)
+            // Check if user said something we can learn
+            val learnedType = repository.parseAndLearnFromUserText(text)
+            if (learnedType != null) {
+                _learningTelemetry.value = "Neural Logic Update: Successfully adapted to $learnedType!"
+            } else {
+                _learningTelemetry.value = "Synaptic weight adjusted. Response aligned to Master's expectations."
+            }
+
+            repository.sendUserMessageAndGetAiReply(text, _offlineModeEnabled.value)
             _isLoading.value = false
         }
     }
@@ -77,16 +117,35 @@ class ChatViewModel(
     fun sendPresetCommand(command: PresetCommand) {
         if (_isLoading.value) return
         _isLoading.value = true
+        _learningTelemetry.value = "Executing immediate reflex response sequence..."
         viewModelScope.launch {
-            repository.sendUserMessageAndGetAiReply(command.prompt)
+            val learnedType = repository.parseAndLearnFromUserText(command.prompt)
+            if (learnedType != null) {
+                _learningTelemetry.value = "Telemetry: Learned $learnedType from preset!"
+            }
+            repository.sendUserMessageAndGetAiReply(command.prompt, _offlineModeEnabled.value)
             _isLoading.value = false
+        }
+    }
+
+    fun deleteMemory(key: String) {
+        viewModelScope.launch {
+            repository.deleteMemoryByKey(key)
+            _learningTelemetry.value = "Holographic calibration: Deleted user cognitive parameter '$key'."
+        }
+    }
+
+    fun clearAllLearnedDirectives() {
+        viewModelScope.launch {
+            repository.clearAllMemories()
+            _learningTelemetry.value = "Neural reset complete. All custom cognitive synapses evaporated cleanly."
         }
     }
 
     fun clearChatHistory() {
         viewModelScope.launch {
             repository.clearChatHistory()
-            // The init block will automatically catch the empty state and repopulate the welcome message.
+            _learningTelemetry.value = "History cleared. Starting fresh interaction log under Master's command."
         }
     }
 
