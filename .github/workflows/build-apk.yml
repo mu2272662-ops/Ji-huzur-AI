@@ -26,6 +26,9 @@ jobs:
         echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" > .env
         echo "API_KEY=${{ secrets.GEMINI_API_KEY }}" >> .env
 
+    - name: Create Debug Keystore
+      run: keytool -genkey -v -keystore debug.keystore -keyalg RSA -keysize 2048 -validity 10000 -alias debug-key -storepass android -keypass android -dname "CN=Debug,O=Android,C=US"
+
     - name: Generate Gradle Wrapper
       run: gradle wrapper
 
@@ -35,7 +38,6 @@ jobs:
     - name: Build with Gradle
       run: ./gradlew assembleDebug --no-daemon --stacktrace -Dorg.gradle.jvmargs="-Xmx2048m -Dkotlin.daemon.jvm.options=-Xmx2048m"
 
-    # CRITICAL MISSING STEP: Yeh aapki bani hui APK ko download ke liye screen par laayega
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
       with:
