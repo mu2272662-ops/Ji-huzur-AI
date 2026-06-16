@@ -27,7 +27,7 @@ jobs:
         echo "API_KEY=${{ secrets.GEMINI_API_KEY }}" >> .env
 
     - name: Create Debug Keystore
-      run: keytool -genkey -v -keystore debug.keystore -keyalg RSA -keysize 2048 -validity 10000 -alias debug-key -storepass android -keypass android -dname "CN=Debug,O=Android,C=US"
+      run: keytool -genkey -v -keystore debug.keystore -keyalg RSA -keysize 2048 -validity 10000 -alias androiddebugkey -storepass android -keypass android -dname "CN=Debug,O=Android,C=US"
 
     - name: Generate Gradle Wrapper
       run: gradle wrapper
